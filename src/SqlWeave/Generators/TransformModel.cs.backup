@@ -1,0 +1,83 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+namespace SqlWeave.Generators;
+
+/// <summary>
+/// Modelo que representa una transformación completa detectada en una expresión lambda.
+/// </summary>
+internal class TransformModel
+{
+    public List<KeyProperty> GroupingKeys { get; set; } = new();
+    public List<DirectMapping> DirectMappings { get; set; } = new();
+    public List<CollectionMapping> Collections { get; set; } = new();
+    public List<AggregationMapping> Aggregations { get; set; } = new();
+    public string TargetTypeName { get; set; } = string.Empty;
+    public Location? SourceLocation { get; set; }
+}
+
+/// <summary>
+/// Representa una propiedad que será utilizada como clave de agrupamiento.
+/// </summary>
+internal class KeyProperty
+{
+    public string PropertyName { get; set; } = string.Empty;
+    public string SourceExpression { get; set; } = string.Empty;
+    public KeyType Type { get; set; }
+    public bool SkipNull { get; set; }
+    public List<string> CompositeValues { get; set; } = new(); // Para claves compuestas
+}
+
+/// <summary>
+/// Tipos de claves soportadas.
+/// </summary>
+internal enum KeyType
+{
+    Simple,      // agg.Key(item.Id)
+    Composite,   // agg.Key(item.Id, item.Year)
+    Generated    // agg.Key(item => item.Name + item.Year)
+}
+
+/// <summary>
+/// Representa un mapeo directo de propiedad (sin agregación).
+/// </summary>
+internal class DirectMapping
+{
+    public string TargetPropertyName { get; set; } = string.Empty;
+    public string SourceExpression { get; set; } = string.Empty;
+    public string SourceType { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Representa una colección anidada (agg.Items).
+/// </summary>
+internal class CollectionMapping
+{
+    public string PropertyName { get; set; } = string.Empty;
+    public string ItemTypeName { get; set; } = string.Empty;
+    public TransformModel? NestedTransform { get; set; }
+    public bool SkipNull { get; set; }
+}
+
+/// <summary>
+/// Representa una agregación numérica (Sum, Count, etc.).
+/// </summary>
+internal class AggregationMapping
+{
+    public string PropertyName { get; set; } = string.Empty;
+    public AggregationType Type { get; set; }
+    public string SourceExpression { get; set; } = string.Empty;
+    public string? WhereCondition { get; set; }
+}
+
+/// <summary>
+/// Tipos de agregaciones soportadas.
+/// </summary>
+internal enum AggregationType
+{
+    Sum,
+    Count,
+    Avg,
+    Min,
+    Max
+}

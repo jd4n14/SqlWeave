@@ -1,0 +1,6 @@
+﻿namespace SqlWeave.Npgsql;
+
+public class Class1
+{
+
+}
