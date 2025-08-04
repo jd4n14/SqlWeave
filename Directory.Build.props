@@ -14,9 +14,9 @@
     <Copyright>Copyright © g0d13 $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
     
     <!-- Repository information -->
-    <RepositoryUrl>https://github.com/g0d13/SqlWeave</RepositoryUrl>
+    <RepositoryUrl>https://github.com/jd4n14/SqlWeave</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/g0d13/SqlWeave</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/jd4n14/SqlWeave</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     
     <!-- Quality settings -->

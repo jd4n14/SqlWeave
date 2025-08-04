@@ -1,56 +1,42 @@
 # SqlWeave
 
-**SqlWeave** es una librería para C# que permite mapear y agrupar datos relacionales (principalmente de consultas SQL) a objetos complejos tipados. Inspirada en una función JavaScript existente, esta librería utiliza Source Generators e Interceptors para generar código eficiente que transforma datos planos en estructuras jerárquicas.
+[![NuGet](https://img.shields.io/nuget/v/SqlWeave.svg)](https://www.nuget.org/packages/SqlWeave/)
+[![NuGet](https://img.shields.io/nuget/dt/SqlWeave.svg)](https://www.nuget.org/packages/SqlWeave/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-La metáfora del nombre refleja perfectamente su propósito: "tejer" hilos de datos SQL en estructuras de objetos complejas y tipadas.
+**SqlWeave** is a C# library that enables mapping and grouping relational data (primarily from SQL queries) to complex typed objects. Inspired by an existing JavaScript function, this library uses Source Generators and Interceptors to generate efficient code that transforms flat data into hierarchical structures.
 
-## 🚀 Estado del Proyecto
+The name metaphor perfectly reflects its purpose: "weaving" SQL data threads into complex, typed object structures.
 
-**Fase Actual: 2.2 - Extension Methods y API Pública** ✅ **MVP COMPLETADO**
+## ✨ Features
 
-### ✅ Completado
-- [x] Estructura de solución creada
-- [x] Proyecto principal SqlWeave configurado
-- [x] Proyecto de tests configurado
-- [x] Source Generator básico implementado
-- [x] Métodos dummy implementados
-- [x] Tests básicos funcionando
-- [x] Compilación exitosa
-- [x] **Parser de expresiones lambda implementado**
-- [x] **Modelo interno de transformación creado**
-- [x] **Tests del parser implementados**
-- [x] **API extensions básicas funcionando**
-- [x] **Generación de interceptors implementada**
-- [x] **Código de agrupamiento básico generado**
-- [x] **Simulación de DataReader implementada**
-- [x] **🆕 Extension methods reales para Npgsql**
-- [x] **🆕 Manejo completo de parámetros**
-- [x] **🆕 API pública funcional**
-- [x] **🆕 Ejemplos completos de uso**
-- [x] **🆕 34 tests pasando exitosamente**
+- 🚀 **High Performance**: Uses Source Generators and C# 13 Interceptors for optimized code generation
+- 🔒 **Type Safe**: Full compile-time type checking and IntelliSense support
+- 🎯 **Intuitive API**: Familiar syntax inspired by functional programming patterns
+- 🗃️ **Complex Grouping**: Support for nested collections and multi-level aggregations
+- 🔧 **Flexible**: Configurable naming conventions and type conversions
+- 📊 **Rich Aggregations**: Sum, Count, Average, Min, Max with conditional support
 
-### 🎯 MVP Funcional Completado
-SqlWeave ahora es completamente funcional y listo para uso en aplicaciones reales con:
-- ✅ **Conexión real a PostgreSQL** mediante Npgsql
-- ✅ **Interceptors optimizados** que reemplazan automáticamente las llamadas
-- ✅ **API intuitiva** similar a la versión JavaScript original
-- ✅ **Type safety completa** en tiempo de compilación
+## 🚀 Quick Start
 
-### 🔄 Próximas Mejoras
-- [ ] Streaming para datasets grandes (Fase 3.1)
-- [ ] Soporte para más proveedores de BD (Fase 3.2)
-- [ ] Agregaciones condicionales avanzadas (Fase 3.3)
+### Installation
 
-## 🎯 API Objetivo ✅ **COMPLETADA**
+```bash
+# Core library
+dotnet add package SqlWeave
+
+# PostgreSQL support
+dotnet add package SqlWeave.Npgsql
+```
+
+### Basic Usage
 
 ```csharp
 using Npgsql;
 using SqlWeave.Npgsql;
 
-// Conexión real a PostgreSQL
 await using var connection = new NpgsqlConnection(connectionString);
 
-// SqlWeave intercepta automáticamente y genera código optimizado
 var vehicles = await connection.SqlWeave<Vehicle>(@"
     SELECT v.id, v.make, v.model, m.date, m.description, m.cost 
     FROM vehicles v 
@@ -69,51 +55,129 @@ var vehicles = await connection.SqlWeave<Vehicle>(@"
             Cost: item.Cost
         ))
     ));
-
-// ¡El código se ejecuta con performance optimizada gracias a los interceptors!
 ```
 
-## 🛠️ Desarrollo
+### Model Definition
 
-### Requisitos
-- .NET 9
-- C# 13 (requerido para Interceptors)
+```csharp
+public record MaintenanceRecord(
+    DateOnly Date,
+    string Description,
+    decimal Cost
+);
 
-### Compilación
-```bash
-dotnet build
+public record Vehicle(
+    Guid Id, 
+    string Make, 
+    string Model, 
+    decimal TotalMaintenanceCost,
+    int MaintenanceCount,
+    List<MaintenanceRecord> MaintenanceHistory
+);
 ```
 
-### Tests
-```bash
-dotnet test
+## 🎯 Core Concepts
+
+### Grouping Keys
+
+```csharp
+// Simple key
+Id: agg.Key(item.Id)
+
+// Composite key
+GroupKey: agg.Key(item.VehicleId, item.Year)
+
+// Generated key
+YearGroup: agg.Key(item => item.Date.Year)
+
+// Skip null handling
+Id: agg.Key(item.Id, skipNull: true)
 ```
 
-## 📁 Estructura del Proyecto
+### Aggregations
 
-```
-SqlWeave/
-├── src/
-│   ├── SqlWeave/                          # Librería principal
-│   │   ├── Core/                          # Métodos dummy y configuración
-│   │   ├── Extensions/                    # Extension methods
-│   │   ├── Generators/                    # Source generators
-│   │   └── SqlWeave.csproj
-│   └── SqlWeave.Npgsql/                   # Package para Npgsql
-├── tests/
-│   └── SqlWeave.Tests/                    # Tests unitarios
-├── samples/                               # Ejemplos de uso
-└── docs/                                  # Documentación
+```csharp
+// Numeric aggregations
+TotalCost: agg.Sum(item.Cost),
+MaintenanceCount: agg.Count(),
+AvgCost: agg.Avg(item.Cost),
+MinCost: agg.Min(item.Cost),
+MaxCost: agg.Max(item.Cost),
+
+// Conditional aggregations
+ExpensiveMaintenance: agg.Sum(item.Cost, where: x => x.Cost > 100),
+RecentCount: agg.Count(where: x => x.Date > DateTime.Now.AddMonths(-6))
 ```
 
-## 📋 Plan de Desarrollo
+### Nested Collections
 
-Consulta el [documento técnico completo](transformer_technical_doc.md) para ver el plan detallado de desarrollo en 10 semanas.
+```csharp
+MaintenanceHistory: agg.Items<MaintenanceRecord>(() => new MaintenanceRecord(
+    Date: agg.Key(item.Date),
+    Description: item.Description,
+    Cost: item.Cost
+), skipNull: true)
+```
 
-## 🤝 Contribuir
+## ⚙️ Configuration
 
-Este proyecto está en desarrollo activo. Las contribuciones serán bienvenidas una vez que se complete el MVP básico.
+### Naming Conventions
 
-## 📄 Licencia
+```csharp
+// Global configuration
+SqlWeaveConfig.DefaultNamingConvention = NamingConvention.SnakeCase;
 
-Por definir.
+// Per-query configuration
+var vehicles = await connection.SqlWeave<Vehicle>(sql, param, transform)
+                              .WithNaming(NamingConvention.SnakeCase);
+```
+
+**Supported conventions:**
+- `ExactMatch`: Exact name matching
+- `SnakeCase`: `vehicle_make` → `VehicleMake`
+- `CamelCase`: `vehicleMake` → `VehicleMake`
+
+### Type Conversions
+
+Automatic conversions supported:
+- `string` → `enum` (by name or numeric value)
+- `int` → `enum`
+- `DateTime` → `DateOnly`/`TimeOnly`
+- `string` → `Guid`
+- Numeric conversions (`int` → `decimal`, `float` → `double`)
+- `DBNull` → `null` for nullable types
+
+## 🔧 Requirements
+
+- **.NET 9** or later
+- **C# 13** (required for Interceptors)
+- **PostgreSQL** (with SqlWeave.Npgsql package)
+
+## 📖 Documentation
+
+- [Deployment Guide](DEPLOYMENT.md) - Complete guide for packaging and publishing
+- [Technical Documentation](transformer_technical_doc.md) - Detailed technical specifications
+- [Examples](samples/) - Usage examples and sample projects
+
+## 🗺️ Roadmap
+
+- ✅ **Phase 1**: Core functionality with Source Generators and Interceptors
+- ✅ **Phase 2**: PostgreSQL integration and basic aggregations
+- 🔄 **Phase 3**: Advanced features (streaming, more database providers)
+- 📋 **Phase 4**: Performance optimizations and enterprise features
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## ⭐ Support
+
+If you find SqlWeave useful, please consider giving it a star on GitHub! It helps us understand that the project is valuable to the community.
+
+---
+
+**SqlWeave** - Weaving SQL data into beautiful, typed objects ✨

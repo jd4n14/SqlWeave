@@ -117,6 +117,7 @@ dotnet nuget push packages/SqlWeave.Npgsql.*.nupkg --api-key YOUR_API_KEY --sour
 
 ## Links
 
+- [SqlWeave GitHub Repository](https://github.com/jd4n14/SqlWeave)
 - [NuGet Package Manager](https://www.nuget.org)
 - [.NET CLI Pack Reference](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-pack)
 - [.NET CLI Push Reference](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-nuget-push)

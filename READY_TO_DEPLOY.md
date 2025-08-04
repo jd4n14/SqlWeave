@@ -2,25 +2,33 @@
 
 ## ✅ Setup Complete
 
-Tu librería SqlWeave está completamente configurada y lista para ser publicada en NuGet. Los paquetes se han generado correctamente:
+Tu librería SqlWeave está completamente configurada y lista para ser publicada en NuGet. Los paquetes se han generado correctamente con la información actualizada de GitHub:
 
-- ✅ `SqlWeave.1.0.0-preview1.nupkg` (Core library con Source Generator)
-- ✅ `SqlWeave.Npgsql.1.0.0-preview1.nupkg` (PostgreSQL extensions)
+- ✅ `SqlWeave.1.0.0-preview1.nupkg` (49.4 KB - Core library con Source Generator)
+- ✅ `SqlWeave.Npgsql.1.0.0-preview1.nupkg` (17.7 KB - PostgreSQL extensions)
 - ✅ Symbol packages (.snupkg) para debugging
+- ✅ URLs de GitHub actualizadas: https://github.com/jd4n14/SqlWeave
+- ✅ README.md profesional con badges y documentación completa
+- ✅ Licencia MIT incluida
 
 ## 🔧 Scripts Disponibles
 
-### 1. Empaquetado Rápido
+### 1. Subir a GitHub
+```bash
+./deploy-to-github.sh
+```
+
+### 2. Empaquetado Rápido
 ```bash
 ./quick-pack.sh
 ```
 
-### 2. Empaquetado Completo  
+### 3. Empaquetado Completo  
 ```bash
 ./pack.sh
 ```
 
-### 3. Gestión de Versiones
+### 4. Gestión de Versiones
 ```bash
 ./version.sh patch    # 1.0.0 -> 1.0.1
 ./version.sh minor    # 1.0.0 -> 1.1.0
@@ -29,19 +37,25 @@ Tu librería SqlWeave está completamente configurada y lista para ser publicada
 ./version.sh release  # Quitar suffix preview
 ```
 
-### 4. Publicación a NuGet
+### 5. Publicación a NuGet
 ```bash
 ./publish.sh YOUR_API_KEY
 ```
 
-## 📋 Próximos Pasos para Publicar
+## 📋 Próximos Pasos Completos
 
-### 1. Obtener API Key de NuGet
+### 1. Subir a GitHub (RECOMENDADO PRIMERO)
+```bash
+# Sube todos los cambios a GitHub
+./deploy-to-github.sh
+```
+
+### 2. Obtener API Key de NuGet
 1. Ve a [nuget.org](https://www.nuget.org) y crea una cuenta
 2. Ve a tu [Account Settings](https://www.nuget.org/account/apikeys)
 3. Crea un nuevo API Key con permisos de "Push"
 
-### 2. Publicar los Paquetes
+### 3. Publicar los Paquetes
 ```bash
 # Asegúrate de que los paquetes están actualizados
 ./quick-pack.sh
@@ -50,7 +64,7 @@ Tu librería SqlWeave está completamente configurada y lista para ser publicada
 ./publish.sh oy2your-api-key-here
 ```
 
-### 3. Verificar Publicación
+### 4. Verificar Publicación
 - SqlWeave: https://www.nuget.org/packages/SqlWeave/
 - SqlWeave.Npgsql: https://www.nuget.org/packages/SqlWeave.Npgsql/
 
