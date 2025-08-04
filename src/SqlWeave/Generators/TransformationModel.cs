@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace SqlWeave.Generators;
 
 /// <summary>
-/// Representa el modelo completo de una transformación SqlWeave.
+/// Represents the complete model of a SqlWeave transformation.
 /// </summary>
 internal class TransformationModel
 {
@@ -17,7 +17,7 @@ internal class TransformationModel
 }
 
 /// <summary>
-/// Representa una propiedad que actúa como clave de agrupamiento.
+/// Represents a property that acts as a grouping key.
 /// </summary>
 internal class KeyProperty
 {
@@ -29,7 +29,7 @@ internal class KeyProperty
 }
 
 /// <summary>
-/// Tipo de clave de agrupamiento.
+/// Type of grouping key.
 /// </summary>
 internal enum KeyType
 {
@@ -39,7 +39,7 @@ internal enum KeyType
 }
 
 /// <summary>
-/// Representa un mapeo directo de propiedad.
+/// Represents a direct property mapping.
 /// </summary>
 internal class DirectMapping
 {
@@ -49,7 +49,7 @@ internal class DirectMapping
 }
 
 /// <summary>
-/// Representa una agregación numérica.
+/// Represents a numeric aggregation.
 /// </summary>
 internal class AggregationMapping
 {
@@ -61,7 +61,7 @@ internal class AggregationMapping
 }
 
 /// <summary>
-/// Tipos de agregación soportados.
+/// Types of supported aggregations.
 /// </summary>
 internal enum AggregationType
 {
@@ -73,7 +73,7 @@ internal enum AggregationType
 }
 
 /// <summary>
-/// Representa una colección anidada.
+/// Represents a nested collection.
 /// </summary>
 internal class CollectionMapping
 {

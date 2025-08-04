@@ -4,7 +4,7 @@ using Xunit;
 namespace SqlWeave.Tests;
 
 /// <summary>
-/// Tests básicos para verificar que la infraestructura esté funcionando.
+/// Basic tests to verify that the infrastructure is working.
 /// </summary>
 public class BasicInfrastructureTests
 {

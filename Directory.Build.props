@@ -4,8 +4,8 @@
 <Project>
   <PropertyGroup>
     <!-- Common version information -->
-    <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>preview1</VersionSuffix>
+    <VersionPrefix>1.0.1</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
     
     <!-- Common package information -->
     <Authors>g0d13</Authors>

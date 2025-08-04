@@ -1,43 +1,32 @@
 namespace SqlWeave.Core;
 
 /// <summary>
-/// Convenciones de nomenclatura para mapeo de columnas de base de datos a propiedades C#.
-/// </summary>
-public enum NamingConvention
-{
-    /// <summary>
-    /// Coincidencia exacta entre nombres de columna y propiedades.
-    /// </summary>
-    ExactMatch,
-    
-    /// <summary>
-    /// Convierte snake_case a PascalCase (ej: vehicle_make → VehicleMake).
-    /// </summary>
-    SnakeCase,
-    
-    /// <summary>
-    /// Convierte camelCase a PascalCase (ej: vehicleMake → VehicleMake).
-    /// </summary>
-    CamelCase
-}
-
-/// <summary>
-/// Configuración global para SqlWeave.
+/// Global configuration for SqlWeave operations
 /// </summary>
 public static class SqlWeaveConfig
 {
     /// <summary>
-    /// Convención de nomenclatura por defecto para todas las operaciones SqlWeave.
+    /// Default naming convention for all SqlWeave operations
     /// </summary>
     public static NamingConvention DefaultNamingConvention { get; set; } = NamingConvention.ExactMatch;
     
     /// <summary>
-    /// Habilita logging detallado para debugging.
+    /// Enables detailed logging for debugging
     /// </summary>
     public static bool EnableDetailedLogging { get; set; } = false;
     
     /// <summary>
-    /// Tamaño de lote por defecto para operaciones de streaming.
+    /// Default batch size for streaming operations
     /// </summary>
     public static int DefaultBatchSize { get; set; } = 1000;
+    
+    /// <summary>
+    /// Maximum number of items to keep in memory during streaming operations
+    /// </summary>
+    public static int MaxMemoryItems { get; set; } = 100000;
+    
+    /// <summary>
+    /// Enables automatic type conversion for common scenarios
+    /// </summary>
+    public static bool EnableAutomaticTypeConversion { get; set; } = true;
 }

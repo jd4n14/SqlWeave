@@ -6,9 +6,9 @@ using Xunit;
 namespace SqlWeave.Tests;
 
 /// <summary>
-/// Tests para los extension methods de Npgsql.
-/// Nota: Estos tests verifican que el código compila y la API funciona,
-/// pero no requieren una base de datos real ya que los interceptors manejan la lógica.
+/// Tests for Npgsql extension methods.
+/// Note: These tests verify that the code compiles and the API works,
+/// but don't require a real database since interceptors handle the logic.
 /// </summary>
 public class NpgsqlExtensionsTests
 {

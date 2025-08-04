@@ -6,16 +6,16 @@ using System.Text;
 namespace SqlWeave.Generators;
 
 /// <summary>
-/// Parser que analiza expresiones lambda para extraer información de transformación.
+/// Parser that analyzes lambda expressions to extract transformation information.
 /// </summary>
 internal static class LambdaExpressionParser
 {
     /// <summary>
-    /// Analiza una expresión lambda y extrae el modelo de transformación.
+    /// Analyzes a lambda expression and extracts the transformation model.
     /// </summary>
-    /// <param name="lambdaExpression">La expresión lambda a analizar</param>
-    /// <param name="semanticModel">Modelo semántico para resolución de tipos</param>
-    /// <returns>Modelo de transformación extraído</returns>
+    /// <param name="lambdaExpression">The lambda expression to analyze</param>
+    /// <param name="semanticModel">Semantic model for type resolution</param>
+    /// <returns>Extracted transformation model</returns>
     public static TransformationModel ParseTransform(LambdaExpressionSyntax lambdaExpression, SemanticModel semanticModel)
     {
         var model = new TransformationModel
@@ -23,10 +23,10 @@ internal static class LambdaExpressionParser
             SourceLocation = lambdaExpression.GetLocation()
         };
 
-        // El cuerpo de la lambda debería ser una expresión de creación de objeto
+        // The lambda body should be an object creation expression
         if (lambdaExpression.Body is not ObjectCreationExpressionSyntax objectCreation)
         {
-            // TODO: Reportar error de diagnóstico
+            // TODO: Report diagnostic error
             return model;
         }
 
@@ -59,7 +59,7 @@ internal static class LambdaExpressionParser
         {
             if (argument.NameColon != null)
             {
-                // Argumento nombrado: PropertyName: expression
+                // Named argument: PropertyName: expression
                 var propertyName = argument.NameColon.Name.Identifier.ValueText;
                 AnalyzePropertyAssignment(propertyName, argument.Expression, model, semanticModel);
             }
@@ -99,12 +99,12 @@ internal static class LambdaExpressionParser
                 break;
                 
             case LiteralExpressionSyntax literal:
-                // Valor literal: PropertyName = "constant"
+                // Literal value: PropertyName = "constant"
                 AnalyzeLiteralMapping(propertyName, literal, model, semanticModel);
                 break;
                 
             default:
-                // Otros tipos de expresión - mapeo directo genérico
+                // Other expression types - generic direct mapping
                 AnalyzeGenericMapping(propertyName, expression, model, semanticModel);
                 break;
         }
@@ -116,7 +116,7 @@ internal static class LambdaExpressionParser
         TransformationModel model, 
         SemanticModel semanticModel)
     {
-        // Verificar si es una llamada a métodos de agregación
+        // Check if it's a call to aggregation methods
         if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
         {
             var objectName = GetExpressionText(memberAccess.Expression);
@@ -159,14 +159,14 @@ internal static class LambdaExpressionParser
 
         if (invocation.ArgumentList.Arguments.Count == 1)
         {
-            // Clave simple: agg.Key(item.Id)
+            // Simple key: agg.Key(item.Id)
             var argument = invocation.ArgumentList.Arguments[0];
             keyProperty.Type = KeyType.Simple;
             keyProperty.SourceExpression = GetExpressionText(argument.Expression);
         }
         else if (invocation.ArgumentList.Arguments.Count > 1)
         {
-            // Verificar si es clave compuesta o si tiene parámetros adicionales
+            // Check if it's composite key or has additional parameters
             var firstArg = invocation.ArgumentList.Arguments[0];
             
             if (invocation.ArgumentList.Arguments.Count == 2 && 
@@ -200,7 +200,7 @@ internal static class LambdaExpressionParser
             PropertyName = propertyName
         };
 
-        // Extraer tipo genérico: agg.Items<T>()
+        // Extract generic type: agg.Items<T>()
         if (invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
             memberAccess.Name is GenericNameSyntax genericName &&
             genericName.TypeArgumentList.Arguments.Count > 0)
@@ -209,13 +209,38 @@ internal static class LambdaExpressionParser
             collection.ItemTypeName = GetExpressionText(typeArgument);
         }
 
-        // Analizar argumentos (factory lambda y skipNull)
+        // Analyze arguments (factory lambda and skipNull)
         if (invocation.ArgumentList.Arguments.Count > 0)
         {
             var factoryArg = invocation.ArgumentList.Arguments[0];
             
-            // TODO: Analizar la factory lambda para obtener la transformación anidada
-            // Por ahora, placeholder
+            // Analyze factory lambda to get nested transformation
+            if (factoryArg.Expression is LambdaExpressionSyntax factoryLambda)
+            {
+                collection.NestedTransformation = ParseTransform(factoryLambda, semanticModel);
+            }
+            else if (factoryArg.Expression is ParenthesizedLambdaExpressionSyntax parenthesizedLambda)
+            {
+                collection.NestedTransformation = ParseTransform(parenthesizedLambda, semanticModel);
+            }
+            else
+            {
+                // If it's not a lambda, create empty transformation model
+                collection.NestedTransformation = new TransformationModel();
+            }
+            
+            // Check for skipNull parameter
+            var skipNullArg = invocation.ArgumentList.Arguments
+                .FirstOrDefault(arg => arg.NameColon?.Name.Identifier.ValueText == "skipNull");
+            
+            if (skipNullArg != null)
+            {
+                collection.SkipNull = ExtractBooleanLiteral(skipNullArg.Expression);
+            }
+        }
+        else
+        {
+            // No arguments provided, create empty transformation
             collection.NestedTransformation = new TransformationModel();
         }
 
@@ -305,7 +330,7 @@ internal static class LambdaExpressionParser
         model.DirectMappings.Add(mapping);
     }
     /// <summary>
-    /// Métodos de utilidad para el parser.
+    /// Utility methods for the parser.
     /// </summary>
     
     private static string GetExpressionText(SyntaxNode expression)

@@ -8,19 +8,19 @@ using System.Text;
 namespace SqlWeave.Generators;
 
 /// <summary>
-/// Source Generator principal que analiza llamadas a SqlWeave y genera interceptors optimizados.
+/// Main Source Generator that analyzes SqlWeave calls and generates optimized interceptors.
 /// </summary>
 [Generator]
 public class SqlWeaveGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Generar clase de información
+        // Generate info class
         context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
             "SqlWeaveGenerator_Info.g.cs", 
             SourceText.From(GenerateInfoClass(), Encoding.UTF8)));
         
-        // Buscar llamadas a métodos SqlWeave para generar interceptors
+        // Look for SqlWeave method calls to generate interceptors
         var sqlWeaveCalls = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => IsPotentialSqlWeaveCall(s),
@@ -33,11 +33,11 @@ public class SqlWeaveGenerator : IIncrementalGenerator
 
     private static bool IsPotentialSqlWeaveCall(SyntaxNode node)
     {
-        // Buscar invocaciones que podrían ser extensiones SqlWeave
+        // Look for invocations that could be SqlWeave extensions
         if (node is not InvocationExpressionSyntax invocation)
             return false;
 
-        // Buscar patrones como: connection.SqlWeave<T>(...)
+        // Look for patterns like: connection.SqlWeave<T>(...)
         if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
         {
             return memberAccess.Name.Identifier.ValueText == "SqlWeave";
@@ -50,28 +50,28 @@ public class SqlWeaveGenerator : IIncrementalGenerator
     {
         var invocationExpr = (InvocationExpressionSyntax)context.Node;
         
-        // Verificar que sea realmente una llamada a SqlWeave usando información semántica
+        // Verify that it's actually a SqlWeave call using semantic information
         var memberAccess = invocationExpr.Expression as MemberAccessExpressionSyntax;
         if (memberAccess?.Name.Identifier.ValueText != "SqlWeave")
         {
             return null;
         }
 
-        // Extraer argumentos
+        // Extract arguments
         var arguments = invocationExpr.ArgumentList.Arguments;
-        if (arguments.Count < 2) // al menos sql y transform lambda
+        if (arguments.Count < 2) // at least sql and transform lambda
         {
             return null;
         }
 
-        // Extraer la expresión lambda (último argumento)
+        // Extract lambda expression (last argument)
         var lambdaArgument = arguments.LastOrDefault();
         if (lambdaArgument?.Expression is not LambdaExpressionSyntax lambdaExpression)
         {
             return null;
         }
 
-        // Extraer tipo genérico T de SqlWeave<T>
+        // Extract generic type T from SqlWeave<T>
         string? targetType = null;
         if (memberAccess.Name is GenericNameSyntax genericName)
         {
@@ -83,10 +83,10 @@ public class SqlWeaveGenerator : IIncrementalGenerator
             }
         }
 
-        // Determinar si es una llamada de Npgsql
+        // Determine if it's a Npgsql call
         bool isNpgsqlCall = IsNpgsqlConnection(memberAccess.Expression, context.SemanticModel);
 
-        // Parsear la expresión lambda
+        // Parse lambda expression
         var transformationModel = LambdaExpressionParser.ParseTransform(lambdaExpression, context.SemanticModel);
 
         if (transformationModel == null)
@@ -143,7 +143,7 @@ public class SqlWeaveGenerator : IIncrementalGenerator
         var debugInfo = GenerateDebugInfo(validCalls);
         context.AddSource("SqlWeaveDebugInfo.g.cs", SourceText.From(debugInfo, Encoding.UTF8));
 
-        // Generar interceptors reales para cada llamada válida
+        // Generate real interceptors for each valid call
         for (int i = 0; i < validCalls.Count; i++)
         {
             var call = validCalls[i];
@@ -151,14 +151,14 @@ public class SqlWeaveGenerator : IIncrementalGenerator
             {
                 string interceptorCode;
                 
-                // Usar el generador apropiado según el tipo de conexión
+                // Use appropriate generator based on connection type
                 if (call.IsNpgsqlCall)
                 {
                     interceptorCode = NpgsqlInterceptorGenerator.GenerateNpgsqlInterceptor(call, i + 1);
                 }
                 else
                 {
-                    // Usar el generador genérico con DataReader simulation
+                    // Use generic generator with DataReader simulation
                     interceptorCode = DataReaderInterceptorGenerator.GenerateDataReaderInterceptor(call, i + 1);
                 }
                 
@@ -166,7 +166,7 @@ public class SqlWeaveGenerator : IIncrementalGenerator
             }
             catch (Exception ex)
             {
-                // En caso de error, generar interceptor de error
+                // In case of error, generate error interceptor
                 var errorCode = GenerateErrorInterceptor(call, i + 1, ex.Message);
                 context.AddSource($"SqlWeaveError_{i + 1:D3}.g.cs", SourceText.From(errorCode, Encoding.UTF8));
             }
@@ -180,7 +180,7 @@ public class SqlWeaveGenerator : IIncrementalGenerator
             namespace SqlWeave.Generated;
             
             /// <summary>
-            /// Información generada por SqlWeaveGenerator para debugging.
+            /// Information generated by SqlWeaveGenerator for debugging.
             /// </summary>
             internal static class SqlWeaveGeneratorInfo
             {
@@ -189,7 +189,7 @@ public class SqlWeaveGenerator : IIncrementalGenerator
                 
                 public static void EnsureGeneratorIsWorking()
                 {
-                    // Este método confirma que el Source Generator está funcionando
+                    // This method confirms that the Source Generator is working
                 }
             }
             """;
@@ -204,7 +204,7 @@ public class SqlWeaveGenerator : IIncrementalGenerator
         sb.AppendLine("namespace SqlWeave.Generated;");
         sb.AppendLine();
         sb.AppendLine("/// <summary>");
-        sb.AppendLine("/// Información de debugging sobre las llamadas SqlWeave detectadas.");
+        sb.AppendLine("/// Debug information about detected SqlWeave calls.");
         sb.AppendLine("/// </summary>");
         sb.AppendLine("internal static class SqlWeaveDebugInfo");
         sb.AppendLine("{");
@@ -238,12 +238,12 @@ public class SqlWeaveGenerator : IIncrementalGenerator
         sb.AppendLine("namespace SqlWeave.Generators;");
         sb.AppendLine();
         sb.AppendLine("/// <summary>");
-        sb.AppendLine("/// Interceptors placeholder - será implementado en el próximo sprint.");
+        sb.AppendLine("/// Interceptors placeholder - will be implemented in the next sprint.");
         sb.AppendLine("/// </summary>");
         sb.AppendLine("internal static class GeneratedInterceptors");
         sb.AppendLine("{");
-        sb.AppendLine($"    // {calls.Count} llamadas SqlWeave detectadas y parseadas exitosamente");
-        sb.AppendLine("    // Interceptors reales serán generados en Fase 2.1");
+        sb.AppendLine($"    // {calls.Count} SqlWeave calls detected and parsed successfully");
+        sb.AppendLine("    // Real interceptors will be generated in Phase 2.1");
         sb.AppendLine("}");
         
         return sb.ToString();
@@ -253,14 +253,14 @@ public class SqlWeaveGenerator : IIncrementalGenerator
     {
         var sb = new StringBuilder();
         sb.AppendLine("// <auto-generated/>");
-        sb.AppendLine("// ERROR en generación de interceptor");
+        sb.AppendLine("// ERROR in interceptor generation");
         sb.AppendLine($"// Target: {call.TargetType}");
         sb.AppendLine($"// Error: {errorMessage}");
         sb.AppendLine($"// Location: {call.Location?.GetLineSpan().StartLinePosition}");
         sb.AppendLine();
         sb.AppendLine("namespace SqlWeave.Generated;");
         sb.AppendLine();
-        sb.AppendLine($"// Error en interceptor {interceptorId}: {errorMessage}");
+        sb.AppendLine($"// Error in interceptor {interceptorId}: {errorMessage}");
         sb.AppendLine($"internal static class SqlWeaveError_{interceptorId:D3} {{ }}");
         
         return sb.ToString();
@@ -268,7 +268,7 @@ public class SqlWeaveGenerator : IIncrementalGenerator
 }
 
 /// <summary>
-/// Información completa sobre una llamada a SqlWeave detectada en el código fuente.
+/// Complete information about a SqlWeave call detected in source code.
 /// </summary>
 internal class SqlWeaveCallInfo
 {

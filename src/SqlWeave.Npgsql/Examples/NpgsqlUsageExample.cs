@@ -1,130 +1,127 @@
 using Npgsql;
-using SqlWeave.Npgsql;
 using SqlWeave.Core;
 
-namespace SqlWeave.Examples;
+namespace SqlWeave.Npgsql.Examples;
 
 /// <summary>
-/// Ejemplo completo que demuestra cómo usar SqlWeave con NpgsqlConnection.
-/// Este ejemplo muestra la API completa pero no requiere una base de datos real
-/// ya que los interceptors manejan la ejecución.
+/// Complete example demonstrating how to use SqlWeave with NpgsqlConnection.
+/// This example shows the complete API with clean dot notation syntax.
+/// No real database required as interceptors handle execution.
 /// </summary>
 public static class NpgsqlUsageExample
 {
     public static async Task RunExamplesAsync()
     {
-        // Configuración de conexión (no se usará realmente gracias a los interceptors)
+        // Connection configuration (won't be used thanks to interceptors)
         var connectionString = "Host=localhost;Database=fleet_management;Username=postgres;Password=password";
+        
+        // Configure snake_case naming convention (common for PostgreSQL)
+        SqlWeaveConfig.DefaultNamingConvention = NamingConvention.SnakeCase;
         
         await using var connection = new NpgsqlConnection(connectionString);
 
-        // Ejemplo 1: Consulta simple con agrupamiento
-        Console.WriteLine("=== Ejemplo 1: Agrupamiento Simple ===");
-        var vehiclesByMake = await connection.SqlWeave<VehicleSummary>(
-            "SELECT make, model, year, price FROM vehicles",
+        // Example 1: Simple query with grouping using dot notation
+        Console.WriteLine("=== Example 1: Simple Grouping with Dot Notation ===");
+        var vehiclesByMake = await NpgsqlSqlWeaveExtensions.SqlWeave<VehicleSummary>(connection, "SELECT vehicle_make, vehicle_model, model_year, sale_price FROM vehicles",
             (item, agg) => new VehicleSummary
             {
-                Make = agg.Key(item.Make),
+                Make = agg.Key(item.VehicleMake),       // ✅ Clean dot notation!
                 TotalVehicles = agg.Count(),
-                AveragePrice = agg.Avg(item.Price),
-                TotalValue = agg.Sum(item.Price)
+                AveragePrice = agg.Avg(item.SalePrice), // ✅ Direct property access
+                TotalValue = agg.Sum(item.SalePrice)    // ✅ No casting needed
             });
         
-        Console.WriteLine($"Procesados {vehiclesByMake.Count} grupos de vehículos");
+        Console.WriteLine($"Processed {vehiclesByMake.Count} vehicle groups");
 
-        // Ejemplo 2: Consulta con parámetros y agregaciones complejas
-        Console.WriteLine("\n=== Ejemplo 2: Consulta Parametrizada ===");
-        var expensiveVehicles = await connection.SqlWeave<VehicleDetails>(
-            @"SELECT id, make, model, year, price, mileage 
+        // Example 2: Parameterized query with clean syntax
+        Console.WriteLine("\n=== Example 2: Parameterized Query ===");
+        var expensiveVehicles = await NpgsqlSqlWeaveExtensions.SqlWeave<VehicleDetails>(connection, @"SELECT vehicle_id, vehicle_make, vehicle_model, model_year, sale_price, current_mileage 
               FROM vehicles 
-              WHERE price > @minPrice AND year >= @minYear",
+              WHERE sale_price > @minPrice AND model_year >= @minYear",
             new { minPrice = 20000, minYear = 2020 },
             (item, agg) => new VehicleDetails
             {
-                Id = agg.Key(item.Id),
-                Make = item.Make,
-                Model = item.Model,
-                Year = item.Year,
-                Price = item.Price,
-                Mileage = item.Mileage
+                Id = agg.Key(item.VehicleId),           // ✅ Maps to "vehicle_id" automatically
+                Make = item.VehicleMake,                // ✅ Maps to "vehicle_make"
+                Model = item.VehicleModel,              // ✅ Maps to "vehicle_model"
+                Year = item.ModelYear,                  // ✅ Maps to "model_year"
+                Price = item.SalePrice,                 // ✅ Maps to "sale_price"
+                Mileage = item.CurrentMileage           // ✅ Maps to "current_mileage"
             });
         
-        Console.WriteLine($"Encontrados {expensiveVehicles.Count} vehículos costosos");
+        Console.WriteLine($"Found {expensiveVehicles.Count} expensive vehicles");
 
-        // Ejemplo 3: Join con múltiples tablas y colecciones anidadas
-        Console.WriteLine("\n=== Ejemplo 3: Join con Colecciones Anidadas ===");
-        var vehiclesWithMaintenance = await connection.SqlWeave<VehicleWithMaintenanceHistory>(
-            @"SELECT v.id, v.make, v.model, v.year,
-                     m.id as maintenance_id, m.date as maintenance_date, 
-                     m.description, m.cost as maintenance_cost
+        // Example 3: Join with multiple tables and nested collections
+        Console.WriteLine("\n=== Example 3: Join with Nested Collections ===");
+        var vehiclesWithMaintenance = await NpgsqlSqlWeaveExtensions.SqlWeave<VehicleWithMaintenanceHistory>(connection, @"SELECT v.vehicle_id, v.vehicle_make, v.vehicle_model, v.model_year,
+                     m.maintenance_id, m.maintenance_date, 
+                     m.maintenance_description, m.maintenance_cost
               FROM vehicles v
-              LEFT JOIN maintenance_records m ON v.id = m.vehicle_id
-              WHERE v.make = @make
-              ORDER BY v.id, m.date",
+              LEFT JOIN maintenance_records m ON v.vehicle_id = m.vehicle_id
+              WHERE v.vehicle_make = @make
+              ORDER BY v.vehicle_id, m.maintenance_date",
             new { make = "Toyota" },
             (item, agg) => new VehicleWithMaintenanceHistory
             {
-                Id = agg.Key(item.Id),
-                Make = item.Make,
-                Model = item.Model,
-                Year = item.Year,
-                TotalMaintenanceCost = agg.Sum(item.MaintenanceCost),
+                Id = agg.Key(item.VehicleId),                           // ✅ Clean grouping key
+                Make = item.VehicleMake,                                // ✅ Direct access
+                Model = item.VehicleModel,                              // ✅ No .AsString() needed
+                Year = item.ModelYear,
+                TotalMaintenanceCost = agg.Sum(item.MaintenanceCost),   // ✅ Clean aggregation
                 MaintenanceCount = agg.Count(),
                 AverageMaintenanceCost = agg.Avg(item.MaintenanceCost),
                 MaintenanceHistory = agg.Items<MaintenanceRecord>(() => new MaintenanceRecord
                 {
-                    Id = agg.Key(item.MaintenanceId),
+                    Id = agg.Key(item.MaintenanceId),                   // ✅ Nested clean syntax
                     Date = item.MaintenanceDate,
-                    Description = item.Description,
+                    Description = item.MaintenanceDescription,
                     Cost = item.MaintenanceCost
                 })
             });
         
-        Console.WriteLine($"Procesados {vehiclesWithMaintenance.Count} vehículos con historial");
+        Console.WriteLine($"Processed {vehiclesWithMaintenance.Count} vehicles with history");
 
-        // Ejemplo 4: Claves compuestas para agrupamientos complejos
-        Console.WriteLine("\n=== Ejemplo 4: Claves Compuestas ===");
-        var annualSummaries = await connection.SqlWeave<AnnualVehicleSummary>(
-            @"SELECT make, year, COUNT(*) as vehicle_count, AVG(price) as avg_price
+        // Example 4: Composite keys for complex groupings
+        Console.WriteLine("\n=== Example 4: Composite Keys ===");
+        var annualSummaries = await NpgsqlSqlWeaveExtensions.SqlWeave<AnnualVehicleSummary>(connection, @"SELECT vehicle_make, model_year, COUNT(*) as vehicle_count, AVG(sale_price) as avg_price
               FROM vehicles
-              GROUP BY make, year
+              GROUP BY vehicle_make, model_year
               HAVING COUNT(*) > 1",
             (item, agg) => new AnnualVehicleSummary
             {
-                MakeYear = agg.Key(item.Make, item.Year), // Clave compuesta
-                Make = item.Make,
-                Year = item.Year,
+                MakeYear = agg.Key(item.VehicleMake, item.ModelYear), // ✅ Composite key with dot notation
+                Make = item.VehicleMake,                              // ✅ Clean property access
+                Year = item.ModelYear,
                 VehicleCount = item.VehicleCount,
                 AveragePrice = item.AvgPrice
             });
         
-        Console.WriteLine($"Generados {annualSummaries.Count} resúmenes anuales");
+        Console.WriteLine($"Generated {annualSummaries.Count} annual summaries");
 
-        // Ejemplo 5: Agregaciones condicionales (preparado para implementación futura)
-        Console.WriteLine("\n=== Ejemplo 5: Agregaciones Condicionales (Futuro) ===");
-        var conditionalSummary = await connection.SqlWeave<ConditionalSummary>(
-            @"SELECT vehicle_id, cost, maintenance_type, date
+        // Example 5: Future conditional aggregations (prepared for future implementation)
+        Console.WriteLine("\n=== Example 5: Conditional Aggregations (Future) ===");
+        var conditionalSummary = await NpgsqlSqlWeaveExtensions.SqlWeave<ConditionalSummary>(connection, @"SELECT vehicle_id, maintenance_cost, maintenance_type, maintenance_date
               FROM maintenance_records",
             (item, agg) => new ConditionalSummary
             {
-                VehicleId = agg.Key(item.VehicleId),
-                TotalCost = agg.Sum(item.Cost),
-                // ExpensiveMaintenanceCount = agg.Count(where: x => x.Cost > 1000), // Futuro
-                // PreventiveMaintenanceCost = agg.Sum(item.Cost, where: x => x.MaintenanceType == "Preventive"), // Futuro
+                VehicleId = agg.Key(item.VehicleId),                  // ✅ Clean dot notation
+                TotalCost = agg.Sum(item.MaintenanceCost),            // ✅ Direct aggregation
+                // ExpensiveMaintenanceCount = agg.Count(where: x => x.MaintenanceCost > 1000), // Future
+                // PreventiveMaintenanceCost = agg.Sum(item.MaintenanceCost, where: x => x.MaintenanceType == "Preventive"), // Future
                 MaintenanceCount = agg.Count()
             });
         
-        Console.WriteLine($"Procesados {conditionalSummary.Count} resúmenes condicionales");
+        Console.WriteLine($"Processed {conditionalSummary.Count} conditional summaries");
     }
 
-    // Versión síncrona para compatibilidad
+    // Synchronous version for compatibility
     public static void RunExamples()
     {
         RunExamplesAsync().GetAwaiter().GetResult();
     }
 }
 
-// Modelos de datos para los ejemplos
+// Data models for the examples
 public class VehicleSummary
 {
     public string Make { get; set; } = string.Empty;
@@ -165,7 +162,7 @@ public class MaintenanceRecord
 
 public class AnnualVehicleSummary
 {
-    public object MakeYear { get; set; } = new object(); // Clave compuesta
+    public object MakeYear { get; set; } = new object(); // Composite key
     public string Make { get; set; } = string.Empty;
     public int Year { get; set; }
     public int VehicleCount { get; set; }
