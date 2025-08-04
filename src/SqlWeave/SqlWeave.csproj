@@ -8,11 +8,37 @@
     <InterceptorsPreviewNamespaces>SqlWeave.Generators</InterceptorsPreviewNamespaces>
     <EnablePackageValidation>false</EnablePackageValidation>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    
+    <!-- NuGet Package Properties -->
+    <PackageId>SqlWeave</PackageId>
+    <Title>SqlWeave</Title>
+    <Description>A C# library for mapping and grouping relational data (SQL queries) to complex typed objects using Source Generators and Interceptors.</Description>
+    <PackageTags>sql;orm;mapping;source-generator;interceptor;data-access</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    
+    <!-- Source Generator specific -->
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Include README.md in the package -->
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!-- Source Generator packaging -->
+  <ItemGroup>
+    <!-- Include the analyzer/generator dll -->
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers\dotnet\cs\$(AssemblyName).dll" Visible="false" Condition="'$(Configuration)' == 'Release'" />
   </ItemGroup>
 
 </Project>

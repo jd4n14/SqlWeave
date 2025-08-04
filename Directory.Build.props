@@ -1,0 +1,27 @@
+<!-- Directory.Build.props -->
+<!-- This file contains common properties for all projects in the solution -->
+
+<Project>
+  <PropertyGroup>
+    <!-- Common version information -->
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix>preview1</VersionSuffix>
+    
+    <!-- Common package information -->
+    <Authors>g0d13</Authors>
+    <Company>g0d13</Company>
+    <Product>SqlWeave</Product>
+    <Copyright>Copyright © g0d13 $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
+    
+    <!-- Repository information -->
+    <RepositoryUrl>https://github.com/g0d13/SqlWeave</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/g0d13/SqlWeave</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    
+    <!-- Quality settings -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <NoWarn>$(NoWarn);CS1591</NoWarn> <!-- Missing XML documentation -->
+  </PropertyGroup>
+</Project>

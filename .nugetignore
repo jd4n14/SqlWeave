@@ -1,0 +1,43 @@
+# .nugetignore - Files and directories to exclude from NuGet packages
+
+# Build artifacts
+bin/
+obj/
+packages/
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userprefs
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Development files
+*.tmp
+*.temp
+*.log
+*.cache
+
+# Test files
+*Test*
+*test*
+
+# Documentation build artifacts
+docs/_site/
+docs/api/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Scripts (include only in source)
+*.sh
+*.bat
+*.ps1

@@ -6,6 +6,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <InterceptorsPreviewNamespaces>SqlWeave.Generators</InterceptorsPreviewNamespaces>
+    
+    <!-- NuGet Package Properties -->
+    <PackageId>SqlWeave.Npgsql</PackageId>
+    <Title>SqlWeave.Npgsql</Title>
+    <Description>PostgreSQL extension for SqlWeave - provides extension methods for NpgsqlConnection to use SqlWeave functionality.</Description>
+    <PackageTags>sql;orm;mapping;postgresql;npgsql;source-generator</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +26,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SqlWeave\SqlWeave.csproj" />
+  </ItemGroup>
+
+  <!-- Include README.md in the package -->
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
